@@ -8,6 +8,7 @@ const LocalStorageService = () => {
     const saveUserInfos = (user) => {
         const userStr = JSON.stringify({ user })
         localStorage.setItem('user', userStr)
+        window.location.reload();
     }
 
     const getWorkType = () => {

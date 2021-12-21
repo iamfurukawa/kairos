@@ -9,7 +9,8 @@ import {
     Select,
     Divider,
     Row,
-    Col
+    Col,
+    AutoComplete
 } from 'antd'
 
 import { PlusOutlined } from '@ant-design/icons'
@@ -17,8 +18,10 @@ import { PlusOutlined } from '@ant-design/icons'
 import moment from 'moment'
 
 import LocalStorageService from '../../services/local-storage'
+import TaskManagerService from '../../services/task-manager'
 
-const NewTaskModal = ({ visible = false, setVisible = () => { }, date }) => {
+const NewTaskModal = ({ visible = false, setVisible = () => { }, date, taskUuid }) => {
+
     const tagsLabel = [
         'Backend',
         'Frontend',
@@ -64,6 +67,8 @@ const NewTaskModal = ({ visible = false, setVisible = () => { }, date }) => {
     const [tags, setTags] = useState(LocalStorageService.getTags() || tagsLabel)
     const [newTag, setNewTag] = useState('')
 
+    const [task, setTask] = useState(TaskManagerService.getTaskBy(taskUuid, date))
+
     const [workType, setWorkType] = useState(LocalStorageService.getWorkType() || ['Opus', 'Digio'])
     const [newWorkType, setNewWorkType] = useState('')
 
@@ -71,40 +76,22 @@ const NewTaskModal = ({ visible = false, setVisible = () => { }, date }) => {
 
     const { Option } = Select
 
-
     const modalNewTaskHandleOk = () => {
         formNewTask.validateFields()
             .then(taskForm => {
+                TaskManagerService.createOrUpdate(taskForm, date, taskUuid)
                 formNewTask.resetFields()
-                const taskLog = LocalStorageService.getTaskLog()
-                const dateStr = moment(date).format('DD/MM/YYYY')
-
-                const task = {
-                    description: taskForm.description,
-                    startTime: taskForm['start-time'].format('HH:mm:ss'),
-                    endTime: (taskForm['end-time'] && taskForm['end-time'].format('HH:mm:ss')) || null,
-                    tags: taskForm.tags,
-                    workFor: taskForm['work-for'],
-                    jiraSync: false,
-                }
-
-                if (taskLog[dateStr] && taskLog[dateStr].length > 0) {
-                    taskLog[dateStr] = [...taskLog[dateStr], task]
-                } else {
-                    taskLog[dateStr] = [task]
-                }
-
-                LocalStorageService.saveTaskLog(taskLog)
-
-                setVisible(false)
+                cancel()
             })
             .catch(info => {
                 console.log('Validate Task Failed:', info)
             })
     }
 
-    const cancel = () => setVisible(false)
-
+    const cancel = () => {
+        setTask(null)
+        setVisible(false)
+    }
 
     const onNewWorkChange = event => setNewWorkType(event.target.value)
 
@@ -146,8 +133,13 @@ const NewTaskModal = ({ visible = false, setVisible = () => { }, date }) => {
                     label="Description"
                     name="description"
                     rules={[{ required: true, message: 'Please input a description!' }]}
+                    initialValue={task?.description || ''}
                 >
-                    <Input placeholder='Create a new controller' />
+                    <AutoComplete
+                        options={TaskManagerService.getDescriptions(date)}
+                        defaultValue={task?.description || ''}
+                        placeholder='Create a new bug in production'
+                    />
                 </Form.Item>
 
                 <Row>
@@ -155,17 +147,21 @@ const NewTaskModal = ({ visible = false, setVisible = () => { }, date }) => {
                         <Form.Item
                             label="Start Time"
                             name="start-time"
+                            initialValue={(task && task.startTime && moment(task.startTime, 'HH:mm:ss')) || moment()}
+                            value={(task && task.startTime && moment(task.startTime, 'HH:mm:ss')) || moment()}
                             rules={[{ type: 'object', required: true, message: 'Please select a time!' }]}
                         >
-                            <TimePicker defaultOpenValue={moment('00:00:00', 'HH:mm:ss')} format={'HH:mm:ss'} />
+                            <TimePicker defaultValue={moment(task?.startTime || '00:00:00', 'HH:mm:ss')} format={'HH:mm:ss'} />
                         </Form.Item>
                     </Col>
                     <Col offset={1}>
                         <Form.Item
                             label="End Time"
                             name="end-time"
+                            initialValue={(task && task.endTime && moment(task.endTime, 'HH:mm:ss')) || null}
+                            value={(task&& task.endTime && moment(task.endTime, 'HH:mm:ss')) || null}
                         >
-                            <TimePicker defaultOpenValue={moment('00:00:00', 'HH:mm:ss')} format={'HH:mm:ss'} />
+                            <TimePicker defaultValue={moment(task?.endTime || '00:00:00', 'HH:mm:ss')} format={'HH:mm:ss'} />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -175,8 +171,14 @@ const NewTaskModal = ({ visible = false, setVisible = () => { }, date }) => {
                         <Form.Item
                             label="Jira Item"
                             name="jira-item"
+                            initialValue={task?.jiraItem || ''}
                         >
-                            <Input placeholder='E.g. COREP-1234' />
+                            <AutoComplete
+                                options={TaskManagerService.getJiraItems(date)}
+                                defaultValue={task?.jiraItem || ''}
+                            >
+                                <Input placeholder='E.g. COREP-1234' />
+                            </AutoComplete>
                         </Form.Item>
                     </Col>
 
@@ -184,11 +186,13 @@ const NewTaskModal = ({ visible = false, setVisible = () => { }, date }) => {
                         <Form.Item
                             label="Work for"
                             name="work-for"
+                            initialValue={task?.workFor || []}
                             rules={[{ required: true, message: 'Please select one type!' }]}
                         >
                             <Select
                                 style={{ width: 240 }}
                                 placeholder="Select one"
+                                defaultValue={task?.workFor || []}
                                 dropdownRender={menu => (
                                     <div>
                                         {menu}
@@ -217,11 +221,13 @@ const NewTaskModal = ({ visible = false, setVisible = () => { }, date }) => {
                     name="Tags"
                     name="tags"
                     label="tags"
+                    initialValue={task?.tags || []}
                     rules={[{ required: true, message: 'Please select some tags!', type: 'array' }]}
                 >
                     <Select
                         mode="multiple"
                         placeholder="Please select some tags"
+                        defaultValue={task?.tags || []}
                         dropdownRender={menu => (
                             <div>
                                 {menu}

@@ -10,6 +10,7 @@ import {
 import LocalStorageService from '../../services/local-storage'
 
 const InitModal = ({ visible = false, setVisible = () => { } }) => {
+    const user = LocalStorageService.getUserInfos() || {}
 
     const [formInit] = Form.useForm()
 
@@ -25,6 +26,16 @@ const InitModal = ({ visible = false, setVisible = () => { } }) => {
             })
     }
 
+    const handleCancel = () => {
+        if (!disable())
+            setVisible(false)
+    }
+
+    const disable = () => {
+        const user = LocalStorageService.getUserInfos()
+        return !user
+    }
+
     return (
         <Modal
             visible={visible}
@@ -32,6 +43,9 @@ const InitModal = ({ visible = false, setVisible = () => { } }) => {
             onOk={modalInitHandleOk}
             closable={false}
             footer={[
+                <Button key="cancel" onClick={handleCancel} disabled={disable()}>
+                    Cancel
+                </Button>,
                 <Button form={formInit} key="submit" type="primary" onClick={modalInitHandleOk}>
                     Sign in
                 </Button>,
@@ -45,23 +59,34 @@ const InitModal = ({ visible = false, setVisible = () => { } }) => {
                     label="Your name"
                     name="name"
                     rules={[{ required: true, message: 'Please input your name!' }]}
+                    initialValue={user?.['name'] || ''}
                 >
-                    <Input placeholder='Arnold Schwarzenegger' />
+                    <Input placeholder='Arnold Schwarzenegger' defaultValue={user?.['name'] || ''} />
                 </Form.Item>
 
                 <Form.Item
                     label="Jira URL"
                     name="jira-url"
+                    initialValue={user?.['jira-url'] || ''}
                 >
-                    <Input placeholder='E.g. https://somename.atlassian.net/' />
+                    <Input placeholder='E.g. somename.atlassian.net' value={user?.['jira-url'] || ''} defaultValue={user?.['jira-url'] || ''} />
                 </Form.Item>
 
                 <Form.Item
                     label="Jira API Key"
                     name="jira-api-key"
                     tooltip="Get token here: https://id.atlassian.com/manage-profile/security/api-tokens"
+                    initialValue={user?.['jira-api-key'] || ''}
                 >
-                    <Input placeholder='E.g. 7oFV91HU9HFYI1ossryhA5A8' />
+                    <Input placeholder='E.g. 7oFV91HU9HFYI1ossryhA5A8' value={user?.['jira-api-key'] || ''} defaultValue={user?.['jira-api-key'] || ''} />
+                </Form.Item>
+
+                <Form.Item
+                    label="Email (used on jira)"
+                    name="jira-email"
+                    initialValue={user?.['jira-email'] || ''}
+                >
+                    <Input placeholder='E.g. email@email.com' value={user?.['jira-email'] || ''} defaultValue={user?.['jira-email'] || ''} />
                 </Form.Item>
             </Form>
 
