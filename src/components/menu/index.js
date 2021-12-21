@@ -20,7 +20,7 @@ const MenuComponent = ({
             mode="inline"
             selectable={false}
         >
-            <Menu.Item key="1">Kairos</Menu.Item>
+            <Menu.Item key="1">V-metrics</Menu.Item>
             <SubMenu key="sub1" icon={<CloudSyncOutlined />} title="Jira">
                 <Menu.Item key="4" onClick={() => setModalJiraSyncOpen(true)}>Sync</Menu.Item>
             </SubMenu>
