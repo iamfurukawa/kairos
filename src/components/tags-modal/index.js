@@ -61,7 +61,9 @@ const TagsModal = ({ visible = false, setVisible = () => { } }) => {
         'Personal Loan Core',
         'Api Consulta Service Legado',
         'Api Cobranca',
-        'Api Campanha'
+        'Api Campanha',
+        'Portal de atendimento',
+        'Portal de customização'
     ]
 
     const onOkHandle = () => {

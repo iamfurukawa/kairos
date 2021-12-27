@@ -11,21 +11,27 @@ import { FrownOutlined } from '@ant-design/icons'
 const JiraSyncModal = ({ visible = false, setVisible = () => { } }) => {
     const [startMonth, setStartMonth] = useState(moment())
     const [endMonth, setEndMonth] = useState(moment())
+    const [confirmLoading, setConfirmLoading] = useState(false);
 
     return (
         <Modal
             title="Jira Sync"
             visible={visible}
-            onOk={() => {
+            confirmLoading={confirmLoading}
+            onOk={async() => {
+                setConfirmLoading(true)
+
                 const user = LocalStorageService.getUserInfos()
 
-                if(!user?.['jira-url'] || !user?.['jira-api-key'] || !user?.['jira-email']) {
+                if (!user?.['jira-url'] || !user?.['jira-api-key'] || !user?.['jira-email']) {
                     notification.open({
                         message: 'Status',
                         description: 'You don\'t have credentials! Please edit your user on configuration menu.',
                         icon: <FrownOutlined style={{ color: '#FF0000' }} />,
                     })
 
+                    setConfirmLoading(false)
+                    setVisible(false)
                     return
                 }
 
@@ -35,7 +41,14 @@ const JiraSyncModal = ({ visible = false, setVisible = () => { } }) => {
                     if (taskLog[dateStr] && taskLog[dateStr].length > 0) {
                         const taskUpdated = []
 
-                        taskLog[dateStr].forEach(task => taskUpdated.push(JiraService.syncTask(task, dateStr)))
+                        //taskLog[dateStr].forEach(task => taskUpdated.push(JiraService.syncTask(task, dateStr)))
+
+                        const promises = taskLog[dateStr].map(async(task) => {
+                            const taskSynced = await JiraService.syncTask(task, dateStr)
+                            taskUpdated.push(taskSynced)
+                        })
+
+                        await Promise.all(promises)
 
                         const tasks = LocalStorageService.getTaskLog()
                         tasks[dateStr] = taskUpdated
@@ -43,6 +56,7 @@ const JiraSyncModal = ({ visible = false, setVisible = () => { } }) => {
                     }
                 }
 
+                setConfirmLoading(false)
                 setVisible(false)
             }}
             onCancel={() => setVisible(false)}

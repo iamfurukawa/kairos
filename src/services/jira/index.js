@@ -7,7 +7,7 @@ import { FrownOutlined, SmileOutlined } from '@ant-design/icons'
 import moment from 'moment'
 
 const JiraService = () => {
-    const syncTask = (task, date) => {
+    const syncTask = async (task, date) => {
 
         if (task.jiraSync) return task
 
@@ -44,7 +44,7 @@ const JiraService = () => {
         }
 
         try {
-            AxiosService.addWorklog({
+            await AxiosService.addWorklog({
                 "timeSpentSeconds": timeSpentSeconds.asSeconds(),
                 "comment": task.description,
                 "issue": task.jiraItem,
