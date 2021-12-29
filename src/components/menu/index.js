@@ -11,6 +11,7 @@ const MenuComponent = ({
     setModalTagsOpen,
     setModalWorkTypeOpen,
     setModalInitOpen,
+    setDashboardOpen,
 }) => {
 
     return (
@@ -25,6 +26,7 @@ const MenuComponent = ({
                 <Menu.Item key="4" onClick={() => setModalJiraSyncOpen(true)}>Sync</Menu.Item>
             </SubMenu>
             <SubMenu key="sub2" icon={<AppstoreOutlined />} title="Report">
+                <Menu.Item key="3" onClick={() => setDashboardOpen()}>Dashboard</Menu.Item>
                 <Menu.Item key="5" onClick={() => setModalDownloadOpen(true)}>Download</Menu.Item>
             </SubMenu>
             <SubMenu key="sub4" icon={<SettingOutlined />} title="Configurations">

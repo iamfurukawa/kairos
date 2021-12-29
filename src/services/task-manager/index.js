@@ -1,4 +1,5 @@
 import moment from 'moment'
+import 'moment-duration-format'
 
 import _ from 'lodash'
 
@@ -59,7 +60,7 @@ const TaskManagerService = () => {
         return (taskLog[dateStr] || [])
             .map(task => ({
                 key: task.uuid,
-                task: task.jiraItem ? `${task.jiraItem} - ${task.description}` : `${task.description}`,
+                task: task.jiraItem ? `${task.jiraItem} - ${task.description}` : `${task.workFor} - ${task.description}`,
                 sync: task.jiraSync,
                 time: task.endTime ? `${task.startTime} - ${task.endTime}` : `${task.startTime}`,
                 tags: task.tags,
@@ -146,12 +147,12 @@ const TaskManagerService = () => {
 
     const unSync = (uuid, selectedDate) => {
         const dateStr = moment(selectedDate).format('DD/MM/YYYY')
-        const tasks = LocalStorageService.getTaskLog();
+        const tasks = LocalStorageService.getTaskLog()
 
-        (tasks[dateStr] || []).forEach(task => {
-            if (task.uuid === uuid)
-                task.jiraSync = false
-        })
+            (tasks[dateStr] || []).forEach(task => {
+                if (task.uuid === uuid)
+                    task.jiraSync = false
+            })
 
         LocalStorageService.saveTaskLog(tasks)
     }
@@ -169,6 +170,71 @@ const TaskManagerService = () => {
         return taskSelected
     }
 
+    const getDashboardByJiraIssue = (startData, endData) => {
+        console.log(`Jira ${startData} ${endData}`)
+        const tasks = LocalStorageService.getTaskLog()
+        let data = []
+        for (var m = moment(startData); m.isBefore(endData) || m.isSame(endData, 'day'); m.add(1, 'days')) {
+            const currentDate = moment(m).format('DD/MM/YYYY');
+            const dataOfCurrentDate = (tasks[currentDate] || []).map(task => {
+                if (!task.endTime) return null
+
+                return {
+                    type: task.jiraItem || task.workFor,
+                    value: moment.duration(moment(task.endTime, 'HH:mm:ss').diff(moment(task.startTime, 'HH:mm:ss'))).asSeconds()
+                }
+            })
+
+            data.push(...dataOfCurrentDate)
+        }
+
+        data = _(data)
+            .groupBy((item) => {
+                return item.type.toUpperCase()
+            })
+            .map((group) => {
+                return {
+                    type: group[0].type,
+                    value: group.map(item => item.value).reduce((prev, curr) => prev + curr, 0)
+                }
+            }).value()
+
+        return _.sortBy(data, 'value')
+
+    }
+
+    const getDashboardByTag = (startData, endData) => {
+        console.log(`Tag ${startData} ${endData}`)
+        const tasks = LocalStorageService.getTaskLog()
+        let data = []
+        for (var m = moment(startData); m.isBefore(endData) || m.isSame(endData, 'day'); m.add(1, 'days')) {
+            const currentDate = moment(m).format('DD/MM/YYYY');
+            const dataOfCurrentDate = (tasks[currentDate] || []).flatMap(task => {
+                if (!task.endTime) return null
+
+                return task.tags.map(tag => ({
+                    type: tag,
+                    value: moment.duration(moment(task.endTime, 'HH:mm:ss').diff(moment(task.startTime, 'HH:mm:ss'))).asSeconds()
+                }))
+            })
+
+            data.push(...dataOfCurrentDate)
+        }
+
+        data = _(data)
+            .groupBy((item) => {
+                return item.type.toUpperCase()
+            })
+            .map((group) => {
+                return {
+                    type: group[0].type,
+                    value: group.map(item => item.value).reduce((prev, curr) => prev + curr, 0)
+                }
+            }).value()
+
+        return _.sortBy(data, 'value')
+    }
+
     return {
         createOrUpdate,
         taskMapperToDataSource,
@@ -179,6 +245,8 @@ const TaskManagerService = () => {
         removeTask,
         unSync,
         getTaskBy,
+        getDashboardByJiraIssue,
+        getDashboardByTag
     }
 }
 

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
 
-import { 
-    Button, 
-    Modal, 
-    Table, 
-    Tag 
+import {
+    Button,
+    Modal,
+    Table,
+    Tag
 } from 'antd'
 
 import {
@@ -32,6 +32,7 @@ import NewTaskModal from '../../components/new-task-modal'
 import styles from './home.module.scss'
 import TagsModal from '../../components/tags-modal'
 import WorkTypeModal from '../../components/work-type-modal'
+import DashboardPage from '../dashboard'
 
 const HomePage = () => {
 
@@ -44,6 +45,7 @@ const HomePage = () => {
     const [isModalJiraSyncOpen, setModalJiraSyncOpen] = useState(false)
     const [isModalTagsOpen, setModalTagsOpen] = useState(false)
     const [isModalWorkTypeOpen, setModalWorkTypeOpen] = useState(false)
+    const [isDashboardOpen, setDashboardOpen] = useState(false)
 
     const [dataSource, setDataSource] = useState([])
     const [selectedTasks, setSelectedTasks] = useState([])
@@ -164,27 +166,34 @@ const HomePage = () => {
                         setModalTagsOpen={setModalTagsOpen}
                         setModalWorkTypeOpen={setModalWorkTypeOpen}
                         setModalInitOpen={setModalInitOpen}
+                        setDashboardOpen={() => setDashboardOpen(!isDashboardOpen)}
                     />
                 </div>
                 <div className={styles.right}>
-                    <div className={styles.header}>
-                        <div className={styles.buttons}>
-                            <Button type="primary" shape="circle" icon={<PlusOutlined />} onClick={() => {
-                                setTask(null)
-                                setModalNewTaskOpen(true)
-                            }} />
-                            <Button type="danger" shape="circle" icon={<MinusOutlined />} onClick={() => removeTask()} disabled={!selectedTasks.length} />
-                        </div>
-                        <DatePagination selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
-                    </div>
-                    <Table
-                        dataSource={dataSource}
-                        columns={columns}
-                        rowSelection={rowSelection}
-                        expandedRowRender={expandedRowRender}
-                        style={{ width: '100%' }}
-                        pagination={false}
-                    />
+                    {isDashboardOpen ?
+                        <DashboardPage />
+                        :
+                        <>
+                            <div className={styles.header}>
+                                <div className={styles.buttons}>
+                                    <Button type="primary" shape="circle" icon={<PlusOutlined />} onClick={() => {
+                                        setTask(null)
+                                        setModalNewTaskOpen(true)
+                                    }} />
+                                    <Button type="danger" shape="circle" icon={<MinusOutlined />} onClick={() => removeTask()} disabled={!selectedTasks.length} />
+                                </div>
+                                <DatePagination selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+                            </div>
+                            <Table
+                                dataSource={dataSource}
+                                columns={columns}
+                                rowSelection={rowSelection}
+                                expandedRowRender={expandedRowRender}
+                                style={{ width: '100%' }}
+                                pagination={false}
+                            />
+                        </>
+                    }
                 </div>
             </div>
 
