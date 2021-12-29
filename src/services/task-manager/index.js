@@ -82,6 +82,7 @@ const TaskManagerService = () => {
 
     const continueTask = (taskToContinue, selectedDate) => {
         const dateStr = moment(selectedDate).format('DD/MM/YYYY')
+        const today = moment().format('DD/MM/YYYY')
         const tasks = LocalStorageService.getTaskLog()
         let clonedTask = null;
 
@@ -95,7 +96,11 @@ const TaskManagerService = () => {
         clonedTask.endTime = null
         clonedTask.startTime = moment().format('HH:mm:ss')
 
-        tasks[dateStr].push(clonedTask)
+        if (tasks[today] && tasks[today].length > 0) {
+            tasks[today] = [...tasks[today], clonedTask]
+        } else {
+            tasks[today] = [clonedTask]
+        }
 
         LocalStorageService.saveTaskLog(tasks)
     }

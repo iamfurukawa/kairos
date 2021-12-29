@@ -118,12 +118,12 @@ const NewTaskModal = ({ visible = false, setVisible = () => { }, date, taskUuid 
     return (
         <Modal
             visible={visible}
-            title="New Task"
+            title={task ? "Edit Task" : "New Task"}
             onOk={modalNewTaskHandleOk}
             onCancel={cancel}
             footer={[
                 <Button form={formNewTask} key="submit" type="primary" onClick={modalNewTaskHandleOk}>
-                    Create
+                    {task ? "Update" : "Create"}
                 </Button>,
             ]}
         >

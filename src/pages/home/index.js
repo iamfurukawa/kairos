@@ -1,7 +1,19 @@
 import React, { useEffect, useState } from 'react'
 
-import { Button, Table, Tag } from 'antd'
-import { MinusOutlined, PauseCircleOutlined, PlayCircleOutlined, PlusOutlined } from '@ant-design/icons'
+import { 
+    Button, 
+    Modal, 
+    Table, 
+    Tag 
+} from 'antd'
+
+import {
+    ExclamationCircleOutlined,
+    MinusOutlined,
+    PauseCircleOutlined,
+    PlayCircleOutlined,
+    PlusOutlined
+} from '@ant-design/icons'
 
 import moment from 'moment'
 
@@ -37,6 +49,8 @@ const HomePage = () => {
     const [selectedTasks, setSelectedTasks] = useState([])
     const [task, setTask] = useState({})
 
+    const { confirm } = Modal
+
     useEffect(() => {
         setModalInitOpen(LocalStorageService.getUserInfos() === null)
     }, [])
@@ -55,13 +69,23 @@ const HomePage = () => {
 
     const onContinue = (task) => {
         TaskManagerService.continueTask(task, selectedDate)
+        setSelectedDate(moment())
         reloadDataSorce()
     }
 
     const removeTask = () => {
-        selectedTasks.forEach(task => TaskManagerService.removeTask(task.key, selectedDate))
-        reloadDataSorce()
-        setSelectedTasks([])
+        confirm({
+            title: 'Do you Want to delete these task(s)?',
+            icon: <ExclamationCircleOutlined />,
+            onOk() {
+                selectedTasks.forEach(task => TaskManagerService.removeTask(task.key, selectedDate))
+                reloadDataSorce()
+                setSelectedTasks([])
+            },
+            onCancel() {
+                console.log('Operation Cancelled');
+            },
+        })
     }
 
     const unSync = (uuid) => {
