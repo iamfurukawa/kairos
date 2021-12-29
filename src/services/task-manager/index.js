@@ -188,8 +188,10 @@ const TaskManagerService = () => {
             data.push(...dataOfCurrentDate)
         }
 
+        data = _.omitBy(data, _.isNil)
         data = _(data)
             .groupBy((item) => {
+                console.log(item)
                 return item.type.toUpperCase()
             })
             .map((group) => {
@@ -221,6 +223,7 @@ const TaskManagerService = () => {
             data.push(...dataOfCurrentDate)
         }
 
+        data = _.omitBy(data, _.isNil)
         data = _(data)
             .groupBy((item) => {
                 return item.type.toUpperCase()
