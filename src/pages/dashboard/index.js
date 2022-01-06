@@ -35,7 +35,6 @@ const DashboardPage = () => {
             result = TaskManagerService.getDashboardByTag(startData, endData)
 
         setData(result)
-        console.log(result)
     }
 
     const handleChange = (value) => setFilterSelected(value)

@@ -191,7 +191,6 @@ const TaskManagerService = () => {
         data = _.omitBy(data, _.isNil)
         data = _(data)
             .groupBy((item) => {
-                console.log(item)
                 return item.type.toUpperCase()
             })
             .map((group) => {

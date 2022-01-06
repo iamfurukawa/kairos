@@ -45,7 +45,7 @@ const DownloadModal = ({ visible = false, setVisible = () => { } }) => {
                             return {
                                 day: dayFormatted,
                                 user: user.name,
-                                timeEntry: task.description,
+                                timeEntry: `${task.jiraItem ? (task.jiraItem + ' - ') : ''}${task.description}`,
                                 project: task.workFor,
                                 projectCode: '',
                                 client: task.workFor,
